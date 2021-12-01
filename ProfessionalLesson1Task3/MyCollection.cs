@@ -9,12 +9,51 @@ namespace ProfessionalLesson1Task3
 {
     class MyCollection<T> : IEnumerator<T>, IEnumerable<T> where T : Citizen
     {
-        T[] arr = new T[0];
 
-        #region hide
+        List<T> list = new List<T>();
+
+        public void Add(T citizen)
+        {
+            if (citizen == null) return;
+            if (list.Contains(citizen)) return;
+            if (citizen.GetType() == typeof(Retiree))
+            {
+                var lastRet = (from ret in list where ret.GetType() == typeof(Retiree) select ret).Count();
+                list.Insert(lastRet, citizen);
+            }
+            else
+                list.Add(citizen);
+        }
+        public void Remove()
+        {
+            list.RemoveAt(0);
+        }
+        public void RemoveByCitizenType(Type type)
+        {
+            list.RemoveAll(x => x.GetType() == type);
+        }
+        public void RemoveByCitizen(Citizen citizen)
+        {
+            if (list.Contains(citizen))
+                list.RemoveAll(x => x.Equals(citizen));
+        }
+        public (bool, int?) Contains(Citizen citizen)
+        {
+            return list.Contains(citizen) ? (true, list.IndexOf((T)citizen)) : (false, null);
+        }
+        public (Citizen, int) LastCitizen()
+        {
+            return (list.Last(), list.Count - 1);
+        }
+        public void Clear()
+        {
+            list.Clear();
+        }
+
+        #region Interfaces realization
         int position = -1;
 
-        public T Current => arr[position];
+        public T Current => list[position];
 
         object IEnumerator.Current => Current;
 
@@ -26,7 +65,7 @@ namespace ProfessionalLesson1Task3
         public bool MoveNext()
         {
             position++;
-            if (position > arr.Length)
+            if (position > list.Count - 1)
             {
                 Reset();
                 return false;
@@ -48,31 +87,5 @@ namespace ProfessionalLesson1Task3
             return GetEnumerator();
         }
         #endregion
-
-        public void Add(T citizen)
-        {
-            if (citizen == null) return;
-            if (arr.Contains(citizen)) return;
-            Array.Resize(ref arr, arr.Length + 1);
-
-            if (citizen.GetType() == typeof(Retiree))
-            {
-                int lastRet = 0;
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    if (arr[i].GetType() != null && arr[i].GetType() != typeof(Retiree))
-                        lastRet = i - 1;
-                    break;
-                }
-                for (int i = arr.Length; i > lastRet + 1; i--)
-                {
-                    arr[i] = arr[i - 1];
-                }
-                arr[lastRet + 1] = citizen;
-                return;
-            }
-
-            arr[arr.Length - 1] = citizen;
-        }
     }
 }
